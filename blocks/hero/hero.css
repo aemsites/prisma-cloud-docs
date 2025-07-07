@@ -1,0 +1,28 @@
+main .hero-container {
+  padding-top: 0;
+  background: #00C0E8;
+  padding-bottom: 35px;
+  position: relative;
+  z-index: -2;
+}
+
+.pan-hero h1 {
+  margin: 0;
+  border-bottom: none;
+  font-size: 48px;
+  font-weight: 300;
+  color: white;
+  padding-top: 12px;
+}
+
+.pan-hero hr {
+  border-top: 2px solid #fff;
+  margin: 10px 0;
+  width: 74px;
+}
+
+@media (max-width: 768px) {
+  main .hero-container {
+    padding: 0 0 35px;
+  }
+}

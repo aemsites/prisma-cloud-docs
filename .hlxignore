@@ -1,0 +1,16 @@
+.*
+!.helix/*
+*.md
+karma.config.js
+LICENSE
+package.json
+package-lock.json
+test/*
+types/*
+worker/*
+docs/**/*
+!docs/sitemaps
+!docs/sitemaps/**/*
+bin/*
+*.toml
+dev.js
