@@ -71,8 +71,23 @@ express()
   .use('*', async (req, res) => {
     const reqPath = req.originalUrl;
     const query = req.query && Object.keys(req.query) ? `?${new URLSearchParams(req.query)}` : '';
+    const filename = reqPath.split('/').pop().split('?')[0];
     let body;
     let headers = new Map();
+
+    // filename begins with media_ and ends with .png/.jpg/.jpeg/.gif/.svg
+    // always goes directly to aem
+    if (/^media_.*\.(png|jpg|jpeg|gif|svg)$/.test(filename)) {
+      const resp = await fetch(`http://127.0.0.1:${aemPort}${reqPath}${query}`);
+      // body = await resp.text();
+      headers = new Map(
+        [...resp.headers.entries()].map(([key, value]) => [key.toLowerCase(), value]),
+      );
+      res.setHeaders(headers);
+      res.status(resp.status);
+      res.send(Buffer.from(await resp.arrayBuffer()));
+      return;
+    }
 
     // simulate the overlay by attempting to fetch from there first, if it 404s fetch from aem cli
     let resp = await fetch(`http://127.0.0.1:${mfPort}${reqPath}${query}`);
@@ -88,11 +103,15 @@ express()
       } else {
         body = text;
       }
-      headers = new Map(resp.headers.entries());
+      headers = new Map(
+        [...resp.headers.entries()].map(([key, value]) => [key.toLowerCase(), value]),
+      );
     } else if (resp.status === 404) {
       resp = await fetch(`http://127.0.0.1:${aemPort}${reqPath}${query}`);
       body = await resp.text();
-      headers = new Map(resp.headers.entries());
+      headers = new Map(
+        [...resp.headers.entries()].map(([key, value]) => [key.toLowerCase(), value]),
+      );
     }
 
     headers.delete('content-encoding');

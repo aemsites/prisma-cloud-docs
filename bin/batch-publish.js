@@ -10,7 +10,7 @@ import normalizePath from '../tools/normalize-path.js';
 
 const __dirname = dirname(fileURLToPath(import.meta.url));
 
-const OWNER = 'hlxsites';
+const OWNER = 'aemsites';
 const REPO = 'prisma-cloud-docs';
 const PATH_PREFIX = '';
 const REPO_ROOT = resolve(__dirname, '..');
@@ -23,14 +23,28 @@ const API_URL = (api, path) => `${ADMIN_API}/${api}/${OWNER}/${REPO}/main${path}
  * @param {string} path
  */
 async function publishDoc(path) {
-  const { status: preview } = await fetch(API_URL('preview', path), { method: 'POST' });
-  if (preview === 404 || preview === 502 || path.startsWith('examples')) {
-    // don't publish examples, or missing docs
-    return { path, preview };
-  }
+  try {
+    const { status: preview } = await fetch(API_URL('preview', path), { method: 'POST' });
+    if (preview === 429) {
+      // throttle a bit
+      // eslint-disable-next-line no-promise-executor-return
+      await new Promise((r) => setTimeout(r, 1500));
+    }
+    if (preview > 399 || path.startsWith('/examples/')) {
+    // don't publish examples, missing, broken docs
+      return { path, preview };
+    }
 
-  const { status: publish } = await fetch(API_URL('live', path), { method: 'POST' });
-  return { path, preview, publish };
+    const { status: publish } = await fetch(API_URL('live', path), { method: 'POST' });
+    return { path, preview, publish };
+  } catch (e) {
+    return {
+      path,
+      preview: 500,
+      publish: 500,
+      error: e.message,
+    };
+  }
 }
 
 function isDocPath(path) {
@@ -41,7 +55,7 @@ function isDocPath(path) {
   const absPath = resolve(REPO_ROOT, path);
   const relPath = relative(REPO_ROOT, absPath);
 
-  if (!relPath.startsWith('docs/') || relPath.startsWith('docs/api/')) {
+  if (!relPath.startsWith('docs/') || relPath.startsWith('docs/api/') || relPath.startsWith('docs/.') || relPath.startsWith('docs/sitemaps')) {
     return false;
   }
 
@@ -67,6 +81,11 @@ function cleanPath(ppath) {
     path = `/${path}`;
   }
 
+  if (path.startsWith('/docs/')) {
+    // remove docs prefix, worker remaps the path to the correct folder
+    path = path.substring('/docs'.length);
+  }
+
   if (path.endsWith('.yml')) {
     path = path.replace(/.yml$/, '.json');
   } else if (path.endsWith('.adoc')) {
@@ -88,7 +107,17 @@ async function batchPublish(ppaths) {
   }
 
   paths = paths.filter(isDocPath).map(cleanPath);
-  return processQueue(paths, publishDoc);
+  const { length } = paths;
+  process.stdout.write(`0/${length} (0.00%) paths processed`);
+  const interval = setInterval(() => {
+    process.stdout.clearLine(0);
+    process.stdout.cursorTo(0);
+    process.stdout.write(`${length - paths.length}/${length} (${(((length - paths.length) / length) * 100).toFixed(2)}%) paths processed`);
+  }, 1000);
+  const results = await processQueue(paths, publishDoc, 3);
+  clearInterval(interval);
+  process.stdout.write('\n');
+  return results;
 }
 
 batchPublish(process.argv.slice(2))

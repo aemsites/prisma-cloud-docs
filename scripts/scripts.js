@@ -103,7 +103,7 @@ function getBranch() {
 }
 
 export function siteToDocURL(siteUrl) {
-  return `${PATH_PREFIX}/docs${siteUrl.substring(PATH_PREFIX.length)}`;
+  return `${PATH_PREFIX}${siteUrl.substring(PATH_PREFIX.length)}`;
 }
 
 /**
@@ -189,7 +189,7 @@ const store = new (class {
     this.bookPath = getMetadata('book');
     this.version = getMetadata('version');
     this.product = getMetadata('product');
-    this.docPath = adocArticle ? `${PATH_PREFIX}/docs${window.location.pathname.substring(PATH_PREFIX.length)}` : null;
+    this.docPath = adocArticle ? `${PATH_PREFIX}${window.location.pathname.substring(PATH_PREFIX.length)}` : null;
     this.articleHref = adocArticle ? `${this.docsOrigin}${this.docPath}` : null;
 
     try {
@@ -200,7 +200,7 @@ const store = new (class {
       window.location.hash = window.location.hash.replace(REDIRECTED_ARTICLE_KEY, '');
     }
 
-    const makeBookHref = (path) => `${this.docsOrigin}${path.startsWith('/docs/') ? path.substring('/docs'.length) : path}/book`;
+    const makeBookHref = (path) => `${this.docsOrigin}${path}/book`;
 
     this.allBooks = (getMetadata('all-books') || '')
       .split(';;')

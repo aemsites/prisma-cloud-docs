@@ -172,11 +172,13 @@ async function navigateArticleSPA(ev) {
   if (!siteHref) return;
 
   // convert website path to docs path
-  const docHref = `${PATH_PREFIX}/docs${siteHref.substring(PATH_PREFIX.length)}`;
+  const docHref = `${PATH_PREFIX}${siteHref.substring(PATH_PREFIX.length)}`;
 
   // navigate normally to different books, only SPA within the same book
-  if (!docHref.startsWith(store.bookPath)) return;
-
+  if (!docHref.startsWith(store.bookPath)) {
+    console.log('docHref', docHref, store.bookPath);
+    // return;
+  }
   ev.preventDefault();
 
   const res = await loadArticle(docHref);
