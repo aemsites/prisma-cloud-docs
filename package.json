@@ -9,10 +9,11 @@
     "login": "wrangler login",
     "build": "node worker/build.js",
     "dev:worker": "node --experimental-vm-modules worker/dev.js",
-    "dev:helix": "npx @adobe/helix-cli up --port 3002",
-    "dev:proxy": "node --experimental-vm-modules ./dev.js",
+    "dev:helix": "npx @adobe/helix-cli up --port 3001 --no-open --pages-url https://main--prisma-cloud-docs--aemsites.aem.page",
+    "dev:proxy": "nodemon --experimental-vm-modules --watch head.html --watch dev.js ./dev.js",
     "dev": "concurrently -k \"npm:dev:*\"",
     "deploy": "wrangler publish --env production",
+    "deploy:dev": "wrangler publish --env dev",
     "gen:sitemaps": "node ./bin/generate-sitemaps.js",
     "publish:batch": "node ./bin/batch-publish.js",
     "prepare": "husky install"
@@ -58,6 +59,7 @@
     "js-yaml": "^4.1.0",
     "lint-staged": "^13.2.2",
     "miniflare": "^2.13.0",
+    "nodemon": "^3.1.10",
     "sinon": "15.0.1",
     "wrangler": "^2.15.1",
     "xmlbuilder2": "^3.1.1"

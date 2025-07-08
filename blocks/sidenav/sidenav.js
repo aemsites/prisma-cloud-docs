@@ -476,7 +476,6 @@ function localize(block) {
       curLang.textContent = ph.currentLanguage;
     }
     block.querySelector('.locale-toc-title').textContent = ph.tableOfContents;
-    block.querySelector('.locale-toc-filter').textContent = ph.filter;
 
     block.querySelector('.locale-article-document').textContent = ph.articleDocument;
   });

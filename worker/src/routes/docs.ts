@@ -74,7 +74,6 @@ export async function resolveURL(path: string, ctx: Context) {
 
     if (req.ok) {
       ref = await req.text();
-
       return `${PREVIEW_UPSTREAM}/${PREVIEW_REPO_OWNER}/${PREVIEW_REPO_NAME}/${ref}/${resolvedPath}`;
     }
   }

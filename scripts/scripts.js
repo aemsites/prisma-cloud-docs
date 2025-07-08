@@ -1,3 +1,4 @@
+/* eslint-disable no-underscore-dangle */
 import {
   buildBlock,
   decorateBlock,
@@ -199,7 +200,7 @@ const store = new (class {
       window.location.hash = window.location.hash.replace(REDIRECTED_ARTICLE_KEY, '');
     }
 
-    const makeBookHref = (path) => `${this.docsOrigin}${path}/book`;
+    const makeBookHref = (path) => `${this.docsOrigin}${path.startsWith('/docs/') ? path.substring('/docs'.length) : path}/book`;
 
     this.allBooks = (getMetadata('all-books') || '')
       .split(';;')
@@ -550,13 +551,13 @@ export function parseFragment(fragmentString) {
  */
 export function render(template, fragment) {
   const slottedElements = fragment.querySelectorAll('[slot]');
-  for (const slottedElement of slottedElements) {
+  slottedElements.forEach((slottedElement) => {
     const slotName = slottedElement.getAttribute('slot');
     const slots = template.querySelectorAll(`slot[name="${slotName}"]`);
-    for (const slot of slots) {
+    slots.forEach((slot) => {
       slot.replaceWith(slottedElement.cloneNode(true));
-    }
-  }
+    });
+  });
 }
 
 /**
@@ -711,8 +712,9 @@ async function buildArticleBlock(main, articleHref) {
   /** @type {ArticleResponse} */
   let res;
 
-  if (articleHref === null) {
+  if (articleHref === null || !store.branch) {
     // using content from main, `adoc-article` metadata set to `false`
+    // or no branch set
     const content = main.innerHTML;
     main.innerHTML = '';
     res = {
@@ -727,15 +729,11 @@ async function buildArticleBlock(main, articleHref) {
     };
     store.article = res;
     store.emit('article:fetched', res);
-  } else if (typeof articleHref === 'string') {
+  } else if (typeof articleHref === 'string' && store.branch) {
     // regular adoc article
-    let href = articleHref;
-    if (store.branch) {
-      const url = new URL(articleHref);
-      setBranch(url, store.branch);
-      href = url.toString();
-    }
-    res = await loadArticle(href);
+    const url = new URL(articleHref);
+    setBranch(url, store.branch);
+    res = await loadArticle(url.toString());
   } else {
     console.error('invalid articleHref: ', articleHref);
   }

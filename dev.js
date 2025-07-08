@@ -11,13 +11,13 @@ import { fileURLToPath } from 'url';
 import express from 'express';
 import { config as configEnv } from 'dotenv';
 
-/**
- * @typedef {import('child_process').ChildProcess} ChildProcess
- */
-
 const __dirname = path.dirname(fileURLToPath(import.meta.url));
-const headHtml = fs.readFileSync(path.resolve(__dirname, 'head.html'), 'utf8');
 
+const META_SOURCE = 'https://main--prisma-cloud-docs--aemsites.aem.page/metadata.json';
+
+const HEAD_HTML = fs.readFileSync(path.resolve(__dirname, 'head.html'), 'utf8');
+
+// port the reverse proxy runs on, ie. used for local dev
 const port = process.env.PORT || 3000;
 
 // port used for the aem content
@@ -29,22 +29,76 @@ const mfPort = process.env.MF_PORT || 3002;
 configEnv({ path: path.resolve(__dirname, '.env.dev') });
 process.env.NODE_ENV = 'development';
 
+let _pendingMeta;
+const fetchMetadata = async () => {
+  if (_pendingMeta) {
+    return _pendingMeta;
+  }
+
+  _pendingMeta = fetch(META_SOURCE).then((res) => res.json());
+  return _pendingMeta;
+};
+
+/**
+ * @param {string} pagePath
+ * @returns {Promise<Record<string, string>>}
+ */
+async function resolveMeta(pagePath) {
+  const meta = await fetchMetadata();
+  let resolved = {};
+  meta.data.forEach((row) => {
+    if (row.URL.endsWith('/*') || row.URL.endsWith('/**')) {
+      const cropped = row.URL.split('/').slice(0, -1).join('/');
+      if (pagePath.startsWith(cropped)) {
+        resolved = {
+          ...resolved,
+          ...row,
+        };
+      }
+    }
+  });
+  return resolved;
+}
+
+async function resolveMetaHTML(pagePath) {
+  const meta = await resolveMeta(pagePath);
+  return `
+  ${Object.entries(meta).map(([key, value]) => `<meta name="${key}" content="${value}">`).join('\n')}
+  `;
+}
+
 express()
   .use('*', async (req, res) => {
+    const reqPath = req.originalUrl;
+    const query = req.query && Object.keys(req.query) ? `?${new URLSearchParams(req.query)}` : '';
+    let body;
+    let headers = new Map();
+
     // simulate the overlay by attempting to fetch from there first, if it 404s fetch from aem cli
-    let resp = await fetch(`http://localhost:${mfPort}${req.url}`);
+    let resp = await fetch(`http://127.0.0.1:${mfPort}${reqPath}${query}`);
     if (resp.status === 200) {
-      // add the head.html to the response
+      // add the head.html to the response, if it appears to be html
       const text = await resp.text();
-      const head = text.split('</head>')[0];
-      const body = text.split('</head>')[1];
-      resp.text = async () => `${head}${headHtml}${body}`;
+      if (text.includes('</head>')) {
+        const headBefore = text.split('</head>')[0];
+        const bodyHtml = text.split('</head>')[1];
+        const resolvedMeta = await resolveMetaHTML(reqPath);
+
+        body = `${headBefore}${resolvedMeta}${HEAD_HTML}${bodyHtml}`;
+      } else {
+        body = text;
+      }
+      headers = new Map(resp.headers.entries());
     } else if (resp.status === 404) {
-      resp = await fetch(`http://localhost:${aemPort}${req.url}`);
+      resp = await fetch(`http://127.0.0.1:${aemPort}${reqPath}${query}`);
+      body = await resp.text();
+      headers = new Map(resp.headers.entries());
     }
-    res.setHeaders(Object.fromEntries(resp.headers.entries()));
+
+    headers.delete('content-encoding');
+    res.setHeaders(headers);
     res.status(resp.status);
-    res.send(await resp.text());
+    res.send(body);
   })
   .listen(port, () => {
     console.log(`Reverse proxy running on port ${port}`);

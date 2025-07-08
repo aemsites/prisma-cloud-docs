@@ -507,6 +507,7 @@ const adoc2html = (
   <!DOCTYPE html>
   <html>
     <head>
+      <meta name="template" content="book">
       <meta name="viewport" content="width=device-width, initial-scale=1">
       <script src="/scripts/scripts.js" type="module"></script>
       <link rel="stylesheet" href="/styles/styles.css">

@@ -238,7 +238,7 @@ async function redirectToFirstChapter() {
 
 const decorateCodeBlocks = (block) => {
   // Add copy code button
-  for (const pre of block.querySelectorAll('pre')) {
+  block.querySelectorAll('pre').forEach((pre) => {
     const button = document.createElement('button');
     const wrapper = document.createElement('div');
     wrapper.classList.add('wrapper');
@@ -264,12 +264,12 @@ const decorateCodeBlocks = (block) => {
     wrapper.append(code);
     pre.append(wrapper);
     pre.prepend(button);
-  }
+  });
 };
 
 const decorateImages = (block) => {
   // Wrap images in div
-  for (const image of block.querySelectorAll('img')) {
+  block.querySelectorAll('img').forEach((image) => {
     const pic = image.parentElement;
     const parent = pic.parentElement;
     // ignore both picture and img tags in tables
@@ -283,7 +283,7 @@ const decorateImages = (block) => {
     imageWrapper.setAttribute('data-class', 'image-wrapper');
     picEl.insertAdjacentElement('afterend', imageWrapper);
     imageWrapper.append(picEl);
-  }
+  });
 };
 
 const decorateTitles = (block) => {
@@ -294,7 +294,7 @@ const decorateTitles = (block) => {
   const bookContent = block.querySelector('.book-content');
   const articleTitles = bookContent.querySelectorAll('h1, h2, h3, h4, h5, h6');
 
-  for (const articleTitle of articleTitles) {
+  articleTitles.forEach((articleTitle) => {
     const listItem = document.createElement('li');
     const link = document.createElement('a');
 
@@ -340,7 +340,7 @@ const decorateTitles = (block) => {
         button.classList.remove('active');
       }, 2000);
     });
-  }
+  });
 
   outlineSlot.replaceWith(pageOutline.cloneNode(true));
 
@@ -435,7 +435,7 @@ async function renderContent(block, res, rerender = false) {
 
     // Fixup images src
     if (!isGdoc) {
-      for (const image of article.querySelectorAll('img')) {
+      article.querySelectorAll('img').forEach((image) => {
         const imageURL = new URL(image.src);
 
         if (store.branch) {
@@ -450,12 +450,12 @@ async function renderContent(block, res, rerender = false) {
         const picture = image.parentElement;
         if (picture.tagName === 'PICTURE') {
           const [baseUrl] = image.src.split('?');
-          for (const source of picture.querySelectorAll('source')) {
+          picture.querySelectorAll('source').forEach((source) => {
             const search = source.srcset.split('?')[1];
             source.srcset = `${baseUrl}?${search}`;
-          }
+          });
         }
-      }
+      });
     }
 
     const articleTitle = article.querySelector('h1, h2');

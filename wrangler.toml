@@ -4,7 +4,7 @@ main = "worker/dist/index.mjs"
 account_id = "852dfa4ae1b0d579df29be65b986c101"
 workers_dev = true
 
-compatibility_date = "2022-06-13"
+compatibility_date = "2025-07-07"
 compatibility_flags = []
 
 [build]
@@ -13,30 +13,42 @@ cwd = "worker"
 # watch_dir = "worker/src"
 
 [vars]
-CONTENT_UPSTREAM='https://main--prisma-cloud-docs-website--aemsites.aem.page'
+CONTENT_UPSTREAM='https://main--prisma-cloud-docs--aemsites.aem.page'
 # temp using PAN repo as adoc source
 DOC_UPSTREAM='https://raw.githubusercontent.com'
 DOC_REPO_OWNER='aemsites'
 DOC_REPO_NAME='prisma-cloud-docs'
 DOC_REPO_REF='main'
-DOC_REPO_ROOT_PATH='docs'
+DOC_REPO_ROOT_PATH='/docs'
 BASE_PATH=''
 PREVIEW_UPSTREAM='https://raw.githubusercontent.com'
 PREVIEW_REPO_OWNER='aemsites'
 PREVIEW_REPO_NAME='prisma-cloud-docs'
 
-[env.production.vars]
-CONTENT_UPSTREAM='https://main--prisma-cloud-docs-website--aemsites.aem.live'
+[env.dev.vars]
+CONTENT_UPSTREAM='https://main--prisma-cloud-docs--aemsites.aem.page'
 # temp using PAN repo as adoc source
 DOC_UPSTREAM='https://raw.githubusercontent.com'
 DOC_REPO_OWNER='aemsites'
 DOC_REPO_NAME='prisma-cloud-docs'
 DOC_REPO_REF='main'
-DOC_REPO_ROOT_PATH='docs'
+DOC_REPO_ROOT_PATH='/docs'
 BASE_PATH=''
 PREVIEW_UPSTREAM='https://raw.githubusercontent.com'
 PREVIEW_REPO_OWNER='aemsites'
 PREVIEW_REPO_NAME='prisma-cloud-docs'
 
+# [env.production.vars]
+# CONTENT_UPSTREAM='https://main--prisma-cloud-docs--aemsites.aem.live'
+# DOC_UPSTREAM='https://raw.githubusercontent.com'
+# DOC_REPO_OWNER='aemsites'
+# DOC_REPO_NAME='prisma-cloud-docs'
+# DOC_REPO_REF='main'
+# DOC_REPO_ROOT_PATH='/docs'
+# BASE_PATH=''
+# PREVIEW_UPSTREAM='https://raw.githubusercontent.com'
+# PREVIEW_REPO_OWNER='aemsites'
+# PREVIEW_REPO_NAME='prisma-cloud-docs'
+ 
 # The necessary secrets are:
 # - GITHUB_PAT -> github personal access token with read permission to aemsites/prisma-cloud-docs, used for preview
