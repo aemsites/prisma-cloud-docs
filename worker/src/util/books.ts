@@ -19,7 +19,11 @@ export const getBooks = (ctx: Context) => {
         return path.startsWith(matchPath);
       },
       resolve(this: Book, relPath) {
-        return `${ctx.env.BASE_PATH || ''}${this.path}${relPath}`;
+        let resolvePath = this.path;
+        if (ctx.env.DOC_REPO_ROOT_PATH && this.path.startsWith(ctx.env.DOC_REPO_ROOT_PATH)) {
+          resolvePath = this.path.substring(ctx.env.DOC_REPO_ROOT_PATH.length);
+        }
+        return `${ctx.env.BASE_PATH || ''}${resolvePath}${relPath}`;
       },
     };
     return book;

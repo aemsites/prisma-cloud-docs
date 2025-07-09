@@ -93,22 +93,22 @@ express()
     let resp = await fetch(`http://127.0.0.1:${mfPort}${reqPath}${query}`);
     if (resp.status === 200) {
       // add the head.html to the response, if it appears to be html
-      const text = await resp.text();
-      if (text.includes('</head>')) {
-        const headBefore = text.split('</head>')[0];
-        const bodyHtml = text.split('</head>')[1];
-        const resolvedMeta = await resolveMetaHTML(reqPath);
-
-        body = `${headBefore}${resolvedMeta}${HEAD_HTML}${bodyHtml}`;
-      } else {
-        body = text;
-      }
       headers = new Map(
         [...resp.headers.entries()].map(([key, value]) => [key.toLowerCase(), value]),
       );
+      const buf = await resp.arrayBuffer();
+      if (headers.get('content-type')?.includes('text/html')) {
+        const text = new TextDecoder().decode(buf);
+        const headBefore = text.split('</head>')[0];
+        const bodyHtml = text.split('</head>')[1];
+        const resolvedMeta = await resolveMetaHTML(reqPath);
+        body = `${headBefore}${resolvedMeta}${HEAD_HTML}${bodyHtml}`;
+      } else {
+        body = Buffer.from(buf);
+      }
     } else if (resp.status === 404) {
       resp = await fetch(`http://127.0.0.1:${aemPort}${reqPath}${query}`);
-      body = await resp.text();
+      body = Buffer.from(await resp.arrayBuffer());
       headers = new Map(
         [...resp.headers.entries()].map(([key, value]) => [key.toLowerCase(), value]),
       );
