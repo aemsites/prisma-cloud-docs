@@ -59,7 +59,7 @@ export async function resolveURL(path: string, ctx: Context) {
 
   if (branch) {
     const headers: Record<string, string> = {
-      'User-Agent': 'prisma-cloud-docs--hlxsites',
+      'User-Agent': 'prisma-cloud-docs--aemsites',
       Accept: 'application/vnd.github.VERSION.sha',
       'X-GitHub-Api-Version': '2022-11-28',
     };

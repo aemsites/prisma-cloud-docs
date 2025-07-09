@@ -473,6 +473,7 @@ const adoc2html = (
   } = options;
 
   AsciiDoctor.ConverterFactory.register(new FranklinConverter({ book, topicPath }), ['franklin']);
+
   const html = AsciiDoctor.convert(content, {
     ...opts,
     backend,

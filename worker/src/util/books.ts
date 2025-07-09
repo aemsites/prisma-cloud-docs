@@ -11,7 +11,12 @@ export const getBooks = (ctx: Context) => {
     const book: Book = {
       ...bookData,
       match(this: Book, path) {
-        return path.startsWith(`${ctx.env.BASE_PATH || ''}${this.path}`);
+        let matchPath = this.path;
+        if (ctx.env.DOC_REPO_ROOT_PATH && this.path.startsWith(ctx.env.DOC_REPO_ROOT_PATH)) {
+          matchPath = this.path.substring(ctx.env.DOC_REPO_ROOT_PATH.length);
+        }
+        matchPath = `${ctx.env.BASE_PATH || ''}${matchPath}`;
+        return path.startsWith(matchPath);
       },
       resolve(this: Book, relPath) {
         return `${ctx.env.BASE_PATH || ''}${this.path}${relPath}`;
@@ -38,7 +43,7 @@ export const resolveTopicPath = (path: string, ctx: Context): string | undefined
   if (!book) {
     return '';
   }
-  return path.split(book.path)[1];
+  return `${ctx.env.DOC_REPO_ROOT_PATH || ''}${path}`.split(book.path)[1];
 };
 
 export const resolveAttributes = (path: string, ctx: Context): Record<string, string> => {
